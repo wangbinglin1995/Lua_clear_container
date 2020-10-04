@@ -1,55 +1,65 @@
-local Set = {_set = {}}
 
-self = {}
--- Meta class
--- Shape = {area = 0}
--- 基础类方法 new
-
-
-
-
-function Set.union(a,b)
-    if type(b) ~= type({}) then
-        b = {b}
+ local function pt(c)
+    local strr = '--('
+    for k, v in pairs(c) do
+        strr = strr .. tostring(k) .. ', '
     end
-	local set = Set.new{}
-	for k in pairs(a) do
-		set[k] = true
-	end
-	for k in pairs(b) do
-		set[k] = true
-	end
-	return set
+    if #(c) > 0 then
+        strr = string.sub(strr, 1, -3)
+    end
+    strr = strr .. ')'
+    print(type(c), strr)
 end
 
-function Set.intersection(a,b)
+local Set = {data = 0}
 
-	local set = Set.new{}
-	for k in pairs(a) do
-		if b[k] then
-			set[k] = true
+local function union(a, b)
+	-- pt(a:get())
+	-- pt(b.data)
+    local c = Set:new{}  
+    --c:set{} 
+	for k, v in pairs(a:get()) do
+		--print(k, v)
+        c:add(k)
+    end	
+	for k, v in pairs(b.data or b) do
+		--print(k, v)
+        c:add(k)
+	end
+	-- pt(c.data)
+	return c
+	
+end
+
+local function complementary(a, b)
+    local c = Set:new{}  
+    --c:set{} 
+    for k, v in pairs(a:get()) do
+        if not b:get()[k] then
+			c:add(k)
+		end
+    end	
+	return c
+end
+
+local function intersection(a, b)
+    local c = Set.new{}
+    c:set{}
+	for k in pairs(a:get()) do
+		if b:get()[k] then
+			c:add(k)
 		end
 	end
-	return set
+	return c
 end
 
-
-function Set.complementary(a,b)
-	local set = Set.new{}
-	for k in pairs(a) do
-		if not b[k] then
-			set[k] = true
-		end
-	end
-	return set
-end
 
 
 --求A集合是不是B集合的真子集
-function Set.lessthan(a, b)
+local function lessthan(a, b)
 
-	for k in pairs(a) do
-		if not b[k] then
+	for k in pairs(a:get()) do
+		if not b:get()[k] then
 			return false
 		end
 	end
@@ -57,45 +67,76 @@ function Set.lessthan(a, b)
 end
 
 
--- __add(加)
--- __sub(减)，__mul(乘)，__div(除)，__unm(相反数)，__mod(取模)，__pow(乘幂)
--- 关系类的元方法：
--- __eq(等于)，__lt(小于)，__le(小于等于)
-self.__lt = Set.lessthan
 
-self.__sub = Set.complementary
-
-self.__add = Set.union
-self.__mul = Set.intersection
-
-
-
-function Set:new (t)
-    o = {}
+ --new可以视为构造函数
+function Set:new(t) 
+    o = {}  -- 如果用户没有提供table，则创建一个
     setmetatable(o, self)
     self.__index = self
-    
-    local set = {}
-    for k,v in pairs(t) do
-        set[v] = true
+   
+    if type(t) ~= type({}) then 
+        t = {t}
     end 
+    data = {}
+    if t ~= nil  and #t>0 then 
+        for k, v in pairs(t) do
+            data[v] = true
+        end     
+    end
+    self.data = data
 
-    self._set = set;
+    self.__add = union
+    self.__lt = lessthan
+    self.__sub = complementary
+    self.__mul = intersection
     return o
 end
--- 基础类方法 printArea
+
 function Set:print ()    
+    -- if type(self.data) ~= type({}) then 
+    --     self.data = {self.data}
+    -- end
+
     local strr = '('
-    for k in pairs(self._set) do
+    for k, v in pairs(self.data) do
         strr = strr .. tostring(k) .. ', '
     end
-    if #self._set > 0 then
+    if #(self.data) > 0 then
         strr = string.sub(strr, 1, -3)
+        --print('xsfvzxcvzxv')
     end
     strr = strr .. ')'
 
     print(strr)
 end
+ 
+function Set:set(t)
+    if type(t) ~= type({}) then 
+        t = {t}
+    end 
+    data = {}
+    if t ~= nil  and #t>0 then 
+        for k, v in pairs(t) do
+            data[v] = true
+        end     
+    end
+    self.data = data
+end
+
+function Set:init(t)
+	local a = Set:new()
+	a:set(t)	
+	return a
+end
+
+function Set:add(v)
+    if type(t) ~= type({}) then         
+        self.data[v] = true
+    end     
+end
+
+function Set:get()
+    return self.data
+end
 
 return Set
-
