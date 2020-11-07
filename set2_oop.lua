@@ -7,13 +7,20 @@ local function tostringg(t)  -- print hash-map key
     --         return '"' .. tostring(k) .. '"'  end
     --     })
 
+    -- 采用如下方式 重载tostring方法
+    local _tostring = tostring
+    local tostring = function (s)
+        if type(s) == 'string' then
+            return '"' .. _tostring(s) .. '"'
+        else
+            return _tostring(s)
+        end
+    end
+
+    -- print: covert table to string  
     local strr = {}
     for k, v in pairs(t) do
-        if type(k) == 'string' then
-            table.insert(strr, '"' .. tostring(k) .. '"') 
-        else
-            table.insert(strr, tostring(k)) 
-        end
+        table.insert(strr, tostring(k))         
 	end
 	strr = table.concat(strr, ", ")    
     return '(' .. strr .. ')'    
