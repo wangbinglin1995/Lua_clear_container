@@ -2,9 +2,18 @@
 local _M = {}
 
 local function tostringg(t)  -- print hash-map key
+    -- Lua 只能修改table的metatable，其他类型如string需修改C代码
+    -- string = setmetatable(string, {__tostring = function (self)
+    --         return '"' .. tostring(k) .. '"'  end
+    --     })
+
     local strr = {}
     for k, v in pairs(t) do
-        table.insert(strr, tostring(k)) 
+        if type(k) == 'string' then
+            table.insert(strr, '"' .. tostring(k) .. '"') 
+        else
+            table.insert(strr, tostring(k)) 
+        end
 	end
 	strr = table.concat(strr, ", ")    
     return '(' .. strr .. ')'    
@@ -53,14 +62,12 @@ local function lessthan(a, b)
 end
 
 
-
--- __add(加)
--- __sub(减)，__mul(乘)，__div(除)，__unm(相反数)，__mod(取模)，__pow(乘幂)
--- 关系类的元方法：
--- __eq(等于)，__lt(小于)，__le(小于等于)
+-- OOP:
+-- __add(加) __sub(减)，__mul(乘)，__div(除)，__unm(相反数)，__mod(取模)，__pow(乘幂)
+-- 关系类的元方法：__eq(等于)，__lt(小于)，__le(小于等于)
 
  --new可以视为构造函数
-function _M:new(o) 
+function _M:new(o)   -- o must be a hash-map
     o = o or {}  -- 如果用户没有提供table，则创建一个
     if type(o) ~= 'table' then  
         o = {o}
@@ -94,6 +101,15 @@ function _M:add(array)
     end     
 end
 
+function _M:delete(array)
+    if type(array) ~= type({}) then  
+        array = {array}
+    end
+    for k, v in ipairs(array) do
+        self[v] = nil
+    end     
+end
+
 function _M:get()
     local ans = {}
     for k, v in pairs(self) do
@@ -102,7 +118,7 @@ function _M:get()
     return ans
 end
 
-function _M:printt (name)  
+function _M:print (name)  
     local title =  "Set: ".. (name or "") .. " = "    
     print(title.. tostring(self) )
 end
