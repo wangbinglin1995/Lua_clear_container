@@ -1,8 +1,6 @@
 # Compiled Lua sources
 luac.out
 .idea
-tryy.lua
-Set3.lua
 
 # luarocks build files
 *.src.rock
