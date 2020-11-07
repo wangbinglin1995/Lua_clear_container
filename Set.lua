@@ -26,7 +26,7 @@ function _M.print(s)
 end
 
 
-function _M.union(a,b)
+function _M.union(a,b)     -- 并集
     if type(b) ~= type({}) then
         b = {b}
     end
@@ -40,7 +40,7 @@ function _M.union(a,b)
 	return data
 end
 
-function _M.intersection(a,b)
+function _M.intersection(a,b)    -- 交集
 
 	local data = _M.new{}
 	for k in pairs(a) do
@@ -52,7 +52,7 @@ function _M.intersection(a,b)
 end
 
 
-function _M.complementary(a,b)
+function _M.complementary(a,b)    --差集
 	local data = _M.new{}
 	for k in pairs(a) do
 		if not b[k] then
