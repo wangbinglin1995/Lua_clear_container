@@ -1,68 +1,70 @@
-local Set = {}
+local _M = {}
 local mt = {}
 
 
-function Set.new(t)
-	local set = {}
-	setmetatable(set, mt)
-	for k,v in pairs(t) do
-		set[v] = true
+function _M.new(t)
+	local data = {}
+	setmetatable(data, mt)
+	for k, v in pairs(t) do
+		data[v] = true
 	end
-	return set
+	return data
 end
 
-function Set.print(s)    
-    local strr = '('
+function _M.tostring(s)
+    local strr = {}
     for k in pairs(s) do
-        strr = strr .. tostring(k) .. ', '
-    end
-    if #s > 0 then
-        strr = string.sub(strr, 1, -3)
-    end
-    strr = strr .. ')'
-
-    print(strr)
+        table.insert(strr, tostring(k)) 
+	end
+	strr = table.concat(strr, ", ")
+    
+    return '(' .. strr .. ')'
 end
 
-function Set.union(a,b)
+function _M.print(s)
+    print(_M.tostring(s))
+end
+
+
+function _M.union(a,b)
     if type(b) ~= type({}) then
         b = {b}
     end
-	local set = Set.new{}
+	local data = _M.new{}
 	for k in pairs(a) do
-		set[k] = true
+		data[k] = true
 	end
 	for k in pairs(b) do
-		set[k] = true
+		data[k] = true
 	end
-	return set
+	return data
 end
 
-function Set.intersection(a,b)
+function _M.intersection(a,b)
 
-	local set = Set.new{}
+	local data = _M.new{}
 	for k in pairs(a) do
 		if b[k] then
-			set[k] = true
+			data[k] = true
 		end
 	end
-	return set
+	return data
 end
 
 
-function Set.complementary(a,b)
-	local set = Set.new{}
+function _M.complementary(a,b)
+	local data = _M.new{}
 	for k in pairs(a) do
 		if not b[k] then
-			set[k] = true
+			data[k] = true
 		end
 	end
-	return set
+	return data
 end
 
 
 --求A集合是不是B集合的真子集
-function Set.lessthan(a, b)
+function _M.lessthan(a, b)
 
 	for k in pairs(a) do
 		if not b[k] then
@@ -77,13 +79,14 @@ end
 -- __sub(减)，__mul(乘)，__div(除)，__unm(相反数)，__mod(取模)，__pow(乘幂)
 -- 关系类的元方法：
 -- __eq(等于)，__lt(小于)，__le(小于等于)
-mt.__lt = Set.lessthan
+mt.__lt = _M.lessthan
 
-mt.__sub = Set.complementary
+mt.__sub = _M.complementary
 
-mt.__add = Set.union
-mt.__mul = Set.intersection
+mt.__add = _M.union
+mt.__mul = _M.intersection
+mt.__tostring = _M.tostring
 
 
-return Set
+return _M
 
