@@ -58,20 +58,42 @@ local function intersection(a, b)   -- 交集
 	return _M:new(ans)
 end
 
---求A集合是不是B集合的真子集
+-- 求A集合是不是B集合的真子集
 local function lessthan(a, b)
 	for k in pairs(a) do
 		if not b[k] then
 			return false
 		end
+    end
+    for k in pairs(b) do
+		if not a[k] then
+			return true
+		end
 	end
-	return true
+	return false
 end
 
+-- 求A集合是不是B集合的子集
+local function less_eq(a, b)
+	for k in pairs(a) do
+		if not b[k] then
+			return false
+		end
+    end    
+	return true	
+end
+
+local function equal(a, b)
+    if type(a) ~= type(b) or type(a)~= 'table' then   -- not necessary
+        return false
+    end    
+    return less_eq(b, a) and less_eq(a, b)     
+end
 
 -- OOP:
--- __add(加) __sub(减)，__mul(乘)，__div(除)，__unm(相反数)，__mod(取模)，__pow(乘幂)
--- 关系类的元方法：__eq(等于)，__lt(小于)，__le(小于等于)
+-- __add(加), __sub(减), __mul(乘), __div(除),
+-- __unm(相反数), __mod(取模), __pow(乘幂)
+-- 关系类: __eq(等于), __lt(小于), __le(小于等于)
 
  --new可以视为构造函数
 function _M:new(o)   -- o must be a hash-map
@@ -87,6 +109,8 @@ function _M:new(o)   -- o must be a hash-map
 
     self.__tostring = tostringg  
     self.__lt = lessthan
+    self.__le = less_eq
+    self.__eq = equal    
     
     return o
 end

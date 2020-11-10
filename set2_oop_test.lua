@@ -22,7 +22,16 @@ local function test()
     local d = a - b
     d:print('sub d')    -- (2, 4, 5)
 
-    print("a>b? = "  , a>b) -- false
+    print("a<b? = "  , set2:init{1,2,3}<set2:init{1,2,3}) -- false
+    print("a<=b? = "  , set2:init{1,2,3}<=set2:init{1,2,3}) -- true
+
+    print("a>b? = "  , set2:init{1,2,3}>set2:init{1,2,3,5}) -- false
+    print("a>b? = "  , set2:init{1,2,3,7}>set2:init{1,2,3}) -- true
+    print("a<b? = "  , set2:init{1,2,3}<set2:init{1,2,3,5}) -- true
+    print("a<b? = "  , set2:init{1,2,3,7}<set2:init{1,2,3}) -- false
+    print("a==b? = "  , set2:init{1,2,3}==set2:init{1,2,3}) -- true
+    print("a==b? = "  , set2:init{1,2,3}==set2:init{1,2,3, 'sd'}) -- false
+    print("a==b? = "  , set2:init{1,2,3,7}==set2:init{1,2,3}) -- false
 
     local e = a*b    --交集
     e:print('e=a*b')    -- (3)
