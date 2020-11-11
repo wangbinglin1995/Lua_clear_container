@@ -45,6 +45,13 @@ local function test()
     local h=set2:init{a=7, b=9}  -- init must get an array
     h:print('h')  -- ()
 
+    print('=======================')
+    c:add({'as234', 45, 'rt56'})
+    for i, v in ipairs(c:get()) do
+        print(i, v)
+    end
+    print('=======================')
+
 end
 
 test()
