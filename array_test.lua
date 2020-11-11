@@ -1,6 +1,6 @@
 local Array1 = require('Array_oop')
 
-local arr = Array1(1,2,3)
+local arr = Array1:new(1,2,3)
 print(arr[1])   -- 1
 print(arr[4])   -- nil
 arr[1] = 4
