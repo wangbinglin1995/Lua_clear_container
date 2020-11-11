@@ -1,92 +1,158 @@
+
 local _M = {}
-local mt = {}
 
+local function tostringg(t)  -- print hash-map key
+    -- Lua 只能修改table的metatable，其他类型如string需修改C代码
+    -- string = setmetatable(string, {__tostring = function (self)
+    --         return '"' .. tostring(k) .. '"'  end
+    --     })
 
-function _M.new(t)
-	local data = {}
-	setmetatable(data, mt)
-	for k, v in pairs(t) do
-		data[v] = true
-	end
-	return data
-end
-
-function _M.tostring(s)
-    local strr = {}
-    for k in pairs(s) do
-        table.insert(strr, tostring(k)) 
-	end
-	strr = table.concat(strr, ", ")
-    
-    return '(' .. strr .. ')'
-end
-
-function _M.print(s)
-    print(_M.tostring(s))
-end
-
-
-function _M.union(a,b)     -- 并集
-    if type(b) ~= type({}) then
-        b = {b}
+    -- 采用如下方式 重载tostring方法
+    local _tostring = tostring
+    local tostring = function (s)
+        if type(s) == 'string' then
+            return '"' .. _tostring(s) .. '"'
+        else
+            return _tostring(s)
+        end
     end
-	local data = _M.new{}
-	for k in pairs(a) do
-		data[k] = true
+
+    -- print: covert table to string  
+    local strr = {}
+    for k, v in pairs(t) do
+        table.insert(strr, tostring(k))         
 	end
-	for k in pairs(b) do
-		data[k] = true
-	end
-	return data
+	strr = table.concat(strr, ", ")    
+    return '(' .. strr .. ')'    
 end
 
-function _M.intersection(a,b)    -- 交集
+local function union(a, b)    -- 并集
+    local ans = {}   
+	for k, v in pairs(a) do	
+        ans[k] = true
+    end	
+    for k, v in pairs(b) do        
+        ans[k] = true
+	end   
+	return _M:new(ans)	
+end
 
-	local data = _M.new{}
+
+local function complementary(a, b)    --差集
+    local ans = {}
+    for k, v in pairs(a) do
+        if not b[k] then
+            ans[k] = true
+		end
+    end	
+	return _M:new(ans)
+end
+
+local function intersection(a, b)   -- 交集
+    local ans = {}
 	for k in pairs(a) do
 		if b[k] then
-			data[k] = true
+			ans[k] = true
 		end
 	end
-	return data
+	return _M:new(ans)
 end
 
-
-function _M.complementary(a,b)    --差集
-	local data = _M.new{}
-	for k in pairs(a) do
-		if not b[k] then
-			data[k] = true
-		end
-	end
-	return data
-end
-
-
---求A集合是不是B集合的真子集
-function _M.lessthan(a, b)
-
+-- 求A集合是不是B集合的真子集
+local function lessthan(a, b)
 	for k in pairs(a) do
 		if not b[k] then
 			return false
 		end
+    end
+    for k in pairs(b) do
+		if not a[k] then
+			return true
+		end
 	end
-	return true
+	return false
+end
+
+-- 求A集合是不是B集合的子集
+local function less_eq(a, b)
+	for k in pairs(a) do
+		if not b[k] then
+			return false
+		end
+    end    
+	return true	
+end
+
+local function equal(a, b)
+    if type(a) ~= type(b) or type(a)~= 'table' then   -- not necessary
+        return false
+    end    
+    return less_eq(b, a) and less_eq(a, b)     
+end
+
+-- OOP:
+-- __add(加), __sub(减), __mul(乘), __div(除),
+-- __unm(相反数), __mod(取模), __pow(乘幂)
+-- 关系类: __eq(等于), __lt(小于), __le(小于等于)
+
+ --new可以视为构造函数
+function _M:new(o)   -- o must be a hash-map
+    o = o or {}  -- 如果用户没有提供table，则创建一个
+    if type(o) ~= 'table' then  
+        o = {o}
+    end
+    setmetatable(o, self)
+    self.__index = self    
+    self.__add = union 
+    self.__sub = complementary
+    self.__mul = intersection
+
+    self.__tostring = tostringg  
+    self.__lt = lessthan
+    self.__le = less_eq
+    self.__eq = equal    
+    
+    return o
+end
+
+function _M:init(array)  -- "array" must be an array 
+    local tx = {}
+    for k, v in ipairs(array) do
+        tx[v] = true
+    end
+    return _M:new(tx)    -- hash-map
+end
+
+function _M:add(array)
+    if type(array) ~= type({}) then  
+        array = {array}
+    end
+    for k, v in ipairs(array) do
+        self[v] = true
+    end     
+end
+
+function _M:delete(array)
+    if type(array) ~= type({}) then  
+        array = {array}
+    end
+    for k, v in ipairs(array) do
+        self[v] = nil
+    end     
+end
+
+function _M:get()
+    local ans = {}
+    for k, v in pairs(self) do
+        table.insert(ans, k) 
+    end
+    return ans
+end
+
+function _M:print (name)  
+    local title =  "Set: ".. (name or "") .. " = "    
+    print(title.. tostring(self) )
 end
 
 
--- __add(加)
--- __sub(减)，__mul(乘)，__div(除)，__unm(相反数)，__mod(取模)，__pow(乘幂)
--- 关系类的元方法：
--- __eq(等于)，__lt(小于)，__le(小于等于)
-mt.__lt = _M.lessthan
-
-mt.__sub = _M.complementary
-
-mt.__add = _M.union
-mt.__mul = _M.intersection
-mt.__tostring = _M.tostring
-
-
 return _M
-
