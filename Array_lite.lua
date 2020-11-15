@@ -5,6 +5,16 @@ function Array(...)
     local __array__ = {...}
 
     local __methods__ = {}
+
+    function __methods__:push(v)
+        table.insert(__array__, v)
+    end
+    function __methods__:pop()
+        if #__array__ and #__array__>0 then
+            table.remove(__array__, #__array__)
+        end
+    end
+
     function __methods__:insert(v, at)
         local len = #__array__ + 1
         at = type(at) == 'number' and at or len
@@ -23,18 +33,22 @@ function Array(...)
         print('---> array content end  <---')
     end
 
+    function __methods__:sort(func)
+        table.sort(__array__, func)
+    end
+
     -- extend methods here
 
     local mt = {
-        __index = function(t, k)
+        __index = function(t, k)  -- k => print/insert/removeAt , type: hash-map key (string)           
             if __array__[k] then
                 return __array__[k]
             end
-            if __methods__[k] then
+            if __methods__[k] then  -- __methods__[k] => print/insert/removeAt, type:func
                 return __methods__[k]
             end
         end,
-        __newindex = function(t, k, v)
+        __newindex = function(t, k, v)  -- k = print/insert/removeAt
             if nil == __array__[k] then
                 print(string.format('warning : [%s] index out of range.', tostring(k)))
                 return
@@ -63,3 +77,19 @@ arr:insert('b', 2)
 arr:print()     -- 4,b,2,3,a
 arr:removeAt(1)
 arr:print()     -- b,2,3,a
+
+arr:push(45)
+arr:push('asdf')
+arr:sort(function(a, b)
+    if tostring(a) and tostring(b) then
+        return tostring(a) < tostring(b)
+    else
+        return type(a)<type(b)
+    end
+end
+)
+
+arr:print()
+arr:pop()
+arr:pop()
+arr:print()
