@@ -1,10 +1,36 @@
 
 local _M = {}
 
-function _M.new(...)
+
+function _M.init(...)
+    local __array__ = {...}
+end
+
+
+--local mt = {}
+
+
+function _M:new(array_)
+    if array_ == nil then return nil end
+    if type(array_) ~= 'table' then  array_ = {array_} end
+    
+    local __array__ = {}    
+    for _, v in pairs(array_) do
+        --print("map", k, v)
+        table.insert(__array__, v)
+    end
+    for k, v in ipairs(array_) do
+        --print("array", k, v)
+        table.insert(__array__, k)
+    end
+    
+    if #array_ < 1 then print(#array_); return nil end
+
+     --array_
+-- local __array__ = {...}
     local new_array = {}
 
-    local __array__ = {...}
+    
 
     local __methods__ = {}
     function __methods__:insert(v, at)
@@ -28,11 +54,13 @@ function _M.new(...)
     -- extend methods here
 
     local mt = {
-        __index = function(t, k)
+        __index = function(t, k)   -- k = print/insert/removeAt
+            print("======", tostring(k))
             if __array__[k] then
                 return __array__[k]
             end
             if __methods__[k] then
+                print("======", tostring(__methods__[k]))
                 return __methods__[k]
             end
         end,
