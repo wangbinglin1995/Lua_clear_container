@@ -27,7 +27,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dbde327b-2be6-4195-8e0a-2ee08bbd5e3d" name="Default Changelist" comment="" />
+    <list default="true" id="dbde327b-2be6-4195-8e0a-2ee08bbd5e3d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -51,7 +53,7 @@
     <property name="cf.first.check.clang-format" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="com.sylvanaar.idea.Lua.options.LuaOptionsPanel" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
@@ -90,9 +92,10 @@
       <screen x="0" y="0" width="1536" height="834" />
     </state>
     <state x="549" y="158" key="FileChooserDialogImpl/0.0.1536.834@0.0.1536.834" timestamp="1602641841625" />
-    <state x="270" y="62" key="SettingsEditor" timestamp="1601456783989">
-      <screen x="0" y="0" width="1536" height="834" />
+    <state x="2258" y="87" key="SettingsEditor" timestamp="1606374635992">
+      <screen x="1920" y="0" width="1920" height="1170" />
     </state>
+    <state x="2258" y="87" key="SettingsEditor/0.0.1536.834/1920.0.1920.1170@1920.0.1920.1170" timestamp="1606374635992" />
     <state x="270" y="62" key="SettingsEditor/0.0.1536.834@0.0.1536.834" timestamp="1601456783989" />
   </component>
 </project>
