@@ -95,29 +95,19 @@ local function parse_meta_bias()
     end
     print("ALL data size: " .. (#data))
 
-    local reader = Reader_bias(data)  -- 闭包
-
-    local pos = 1
-    -- local header = string.sub(data, pos, pos+12)
-    -- print(#header, string.sub(header,1, 3), "'" .. header .. "'")
-    pos = pos + 13   -- header end, tags start
-
     local is_video = false;    local video_data = nil
     local is_audio = false;    local audio_data = nil
     local is_meta  = false;    local meta_data  = nil
 
+    local pos = 14  -- header end, tags start
     while true do
         if eof then  break  end
 
         local tag_start_pos = pos
         local tag_data_length = bin2number(string.sub(data, pos+2-1, pos+4-1))
-        -- local timeStamp = bin2number(string.sub(data, pos+5-1, pos+7-1))
-        -- local tagData = string.sub(data, tag_start_pos+11+1, tag_start_pos+11+tag_data_length)
+        
         pos = pos + 11  -- tag_data start
-        pos = pos + tag_data_length  -- tag_end_flag start, (tag_data end)
-
-        -- local tag_end_flag = string.sub(data, pos, pos+4-1)
-        -- local tagSize = bin2number(tag_end_flag)
+        pos = pos + tag_data_length  -- tag_end_flag start, (tag_data end)        
         pos = pos + 4
         local tag_end_pos = pos-1
 
@@ -128,7 +118,6 @@ local function parse_meta_bias()
 
         elseif tag_number == 8 and not is_audio then    -- audio tag            
             is_audio = true
-
             local audio_type = bin2number(string.sub(data, tag_start_pos+11, tag_start_pos+11))  
             if bit.band(audio_type, 240) == 160 then   -- AAC格式: want "第一个 audio tag"
                 audio_data = {tag_start_pos, tag_end_pos}         
@@ -136,7 +125,6 @@ local function parse_meta_bias()
 
         elseif tag_number == 9 and not is_video then   -- video tag 
             is_video = true
-
             local video_type = bin2number(string.sub(data, tag_start_pos+11, tag_start_pos+11))         
             if bit.band(video_type, 15) == 7 then  -- AVC-H264编码 SPS +PPS: want "第一个 video tag"  
                 video_data = {tag_start_pos, tag_end_pos}                
@@ -150,7 +138,7 @@ local function parse_meta_bias()
             break
         end
     end
-    
+
     if meta_data then
         meta_data = string.sub(data, meta_data[1], meta_data[2])
     end
