@@ -98,14 +98,14 @@ local function parse_meta_bias()
     local reader = Reader_bias(data)  -- 闭包
 
     local pos = 1
-    local header = string.sub(data, pos, pos+13)
-    print(#header, string.sub(header,1, 3), "'" .. header .. "'")
+    -- local header = string.sub(data, pos, pos+12)
+    -- print(#header, string.sub(header,1, 3), "'" .. header .. "'")
+    pos = pos + 13   -- header end, tags start
 
     local is_video = false;    local video_data = nil
     local is_audio = false;    local audio_data = nil
     local is_meta  = false;    local meta_data  = nil
 
-    pos = pos + 13
     while true do
         if eof then  break  end
 
@@ -133,7 +133,6 @@ local function parse_meta_bias()
             if bit.band(audio_type, 240) == 160 then   -- AAC格式: want "第一个 audio tag"
                 audio_data = {tag_start_pos, tag_end_pos}         
             end
-            -- print('tagType=audio', tagSize, "timeStamp="..tostring(timeStamp))
 
         elseif tag_number == 9 and not is_video then   -- video tag 
             is_video = true
@@ -142,7 +141,6 @@ local function parse_meta_bias()
             if bit.band(video_type, 15) == 7 then  -- AVC-H264编码 SPS +PPS: want "第一个 video tag"  
                 video_data = {tag_start_pos, tag_end_pos}                
             end
-            -- print('tagType=video', tagSize, "timeStamp="..tostring(timeStamp))
 
         else
             print('This may NOT be a .flv file!')
@@ -151,29 +149,20 @@ local function parse_meta_bias()
         if is_meta and is_audio and is_video then
             break
         end
-
     end
+    
     if meta_data then
         meta_data = string.sub(data, meta_data[1], meta_data[2])
-    else
-        meta_data = ""
     end
     if video_data then
         video_data = string.sub(data, video_data[1], video_data[2])
-    else
-        video_data = ""
     end
     if audio_data then
-        audio_data = string.sub(data, audio_data[1], audio_data[2])
-    else
-        audio_data = ""
+        audio_data = string.sub(data, audio_data[1], audio_data[2])    
     end
+    print(#meta_data, #video_data, #audio_data)    
 
-    print(#meta_data, #video_data, #audio_data)
-    
-
-    return header, meta_data, video_data, audio_data
-
+    return header, meta_data or "", video_data or "", audio_data or ""
 end
 
 
