@@ -20,3 +20,21 @@ function flv_reader:read(n)
     self.pos = self.pos + n
     return res
 end
+
+
+local function file_reader_stream(file_name)    
+    local file = io.open(file_name, "rb")
+    if not file then        
+        return nil
+    end
+    return function(n)
+        n = n or 64   
+        local eof = false    
+        local data = file:read(n)
+        if data == nil or #data < n then 
+            eof = true
+            file:close()
+        end  
+        return data, eof
+    end
+end

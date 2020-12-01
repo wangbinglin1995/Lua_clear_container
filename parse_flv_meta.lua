@@ -1,6 +1,35 @@
 bit  = require "bit"
 
 
+local function read_file_data()
+    local file = io.open('E:\\Project_test\\read_flv\\output_full.flv', "rb")
+    -- local file = io.open('D:\\tt.flv', "rb")
+    if not file then        
+        return nil
+    end
+    local data = file:read("*a")
+    file:close()
+    return data
+end
+
+local function file_data_reader()    
+    local file = io.open('E:\\Project_test\\read_flv\\output_full.flv', "rb")
+    -- local file = io.open('D:\\tt.flv', "rb")
+    if not file then        
+        return nil
+    end
+    return function(n)
+        n = n or 64   
+        local eof = false    
+        local data = file:read(n)
+        if data == nil or #data < n then 
+            eof = true
+            file:close()
+        end  
+        return data, eof
+    end
+end
+
 local function Reader(data)
     local pos = 1
     return function(n)
@@ -15,20 +44,6 @@ local function Reader(data)
     end
 end
 
-local function Reader_bias(data)
-    local pos = 1
-    return function(n)
-        if pos >= #data then            
-            return 0, 0, true
-        elseif n + pos >= #data then             
-            return pos, #data, true            
-        end
-        local old_pos = pos
-        pos = pos + n 
-        return old_pos, pos-1, false
-    end
-end
-
 local function bin2number(str)
     local res = 0
     for i = 1, #str do
@@ -37,22 +52,10 @@ local function bin2number(str)
     return res
 end
 
-    
-local function get_data()
-    -- local file = io.open('E:\\Project_test\\read_flv\\output_full.flv', "rb")
-    local file = io.open('D:\\tt.flv', "rb")
-    if not file then        
-        return nil
-    end
-    local data = file:read("*a")
-    file:close()
-    return data
-end
-
 
 local function list_flv_all_tags()
     print('=========== list_flv_all_tags =================')
-    local data = get_data()
+    local data = read_file_data()
     print("ALL data size: " .. (#data))
 
     local reader = Reader(data)
@@ -87,29 +90,47 @@ local function list_flv_all_tags()
 end
 
 
-local function parse_meta_bias()
-    local data = get_data()
-    if data == nil then
+local function parse_meta()
+    -- local data = read_file_data()
+    local data_reader = file_data_reader()
+    if data_reader == nil then
         print('file open fiald')
         return 
     end
-    print("ALL data size: " .. (#data))
+    local data, eof = data_reader()    
+    -- print("ALL data size: " .. (#data))
 
     local is_video = false;    local video_data = nil
     local is_audio = false;    local audio_data = nil
     local is_meta  = false;    local meta_data  = nil
 
     local pos = 14  -- header end, tags start
-    while true do
-        if eof then  break  end
-
+    local tag_count = 0
+    while not eof do    
         local tag_start_pos = pos
+        if pos+11 > #data then
+            local data_add, eof_local = data_reader() 
+            if not data_add then
+                break
+            end
+            data = data .. data_add
+        end
         local tag_data_length = bin2number(string.sub(data, pos+2-1, pos+4-1))
         
         pos = pos + 11  -- tag_data start
         pos = pos + tag_data_length  -- tag_end_flag start, (tag_data end)        
-        pos = pos + 4
+        pos = pos + 4    -- tag_end_flag: 4 byte data of tag_size
         local tag_end_pos = pos-1
+        tag_count = tag_count + 1
+        
+        while pos > #data do
+            local data_add, eof_local = data_reader() 
+            if not data_add then
+                break
+            end
+            data = data .. data_add
+            if eof_local then eof = true end
+        end
 
         local tag_number = bin2number(string.sub(data, tag_start_pos, tag_start_pos))
         if tag_number == 18 and not is_meta then    -- script_tag should be the first
@@ -119,20 +140,22 @@ local function parse_meta_bias()
         elseif tag_number == 8 and not is_audio then    -- audio tag            
             is_audio = true
             local audio_type = bin2number(string.sub(data, tag_start_pos+11, tag_start_pos+11))  
-            if bit.band(audio_type, 240) == 160 then   -- AAC格式: want "第一个 audio tag"
+            if bit.band(audio_type, 240) == 160 then   -- AAC格式: record "第一个 audio tag"
                 audio_data = {tag_start_pos, tag_end_pos}         
             end
 
         elseif tag_number == 9 and not is_video then   -- video tag 
             is_video = true
             local video_type = bin2number(string.sub(data, tag_start_pos+11, tag_start_pos+11))         
-            if bit.band(video_type, 15) == 7 then  -- AVC-H264编码 SPS +PPS: want "第一个 video tag"  
+            if bit.band(video_type, 15) == 7 then  -- AVC-H264: record "第一个 video tag"- SPS+PPS
                 video_data = {tag_start_pos, tag_end_pos}                
             end
 
         else
-            print('This may NOT be a .flv file!')
-            return
+            if tag_number == 8 and tag_number == 9 and tag_number == 18 then
+                print('This may NOT be a .flv file!')
+                return
+            end
         end
         if is_meta and is_audio and is_video then
             break
@@ -148,14 +171,15 @@ local function parse_meta_bias()
     if audio_data then
         audio_data = string.sub(data, audio_data[1], audio_data[2])    
     end
-    print(#meta_data, #video_data, #audio_data)    
+    print("tag_count: ", tag_count)
+    print(#(meta_data or ""), #(video_data or ""), #(audio_data or ""))
 
     return header, meta_data or "", video_data or "", audio_data or ""
 end
 
 
-local function parse_meta()
-    local data = get_data()
+local function parse_meta_demo()
+    local data = read_file_data()
     print("ALL data size: " .. (#data))
 
     local reader = Reader(data)  -- 闭包
@@ -217,13 +241,13 @@ local function parse_meta()
         end
 
     end
-    print(#meta_data, #video_data, #audio_data)
+    print(#(meta_data or ""), #(video_data or ""), #(audio_data or ""))
     return header, meta_data, video_data, audio_data
 
 end
 
 
-parse_meta_bias()
--- parse_meta()
--- list_flv_all_tags()
+-- list_flv_all_tags()  -- demo 列出flv中所有的tag
+-- parse_meta_demo()   -- demo 有大量字符串切片拼接操作, 执行效率不高
+parse_meta()  -- 解析 flv 
 
