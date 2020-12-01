@@ -1,9 +1,8 @@
 bit  = require "bit"
 
 
-local function read_file_data()
-    local file = io.open('E:\\Project_test\\read_flv\\output_full.flv', "rb")
-    -- local file = io.open('D:\\tt.flv', "rb")
+local function read_file_data(file_path)
+    local file = io.open(file_path, "rb")
     if not file then        
         return nil
     end
@@ -12,9 +11,8 @@ local function read_file_data()
     return data
 end
 
-local function file_data_reader()    
-    local file = io.open('E:\\Project_test\\read_flv\\output_full.flv', "rb")
-    -- local file = io.open('D:\\tt.flv', "rb")
+local function file_data_reader(file_path)    
+    local file = io.open(file_path, "rb")
     if not file then        
         return nil
     end
@@ -53,9 +51,9 @@ local function bin2number(str)
 end
 
 
-local function list_flv_all_tags()
+local function list_flv_all_tags(file_path)
     print('=========== list_flv_all_tags =================')
-    local data = read_file_data()
+    local data = read_file_data(file_path)
     print("ALL data size: " .. (#data))
 
     local reader = Reader(data)
@@ -90,9 +88,9 @@ local function list_flv_all_tags()
 end
 
 
-local function parse_meta()
+local function parse_meta(file_path)
     -- local data = read_file_data()
-    local data_reader = file_data_reader()
+    local data_reader = file_data_reader(file_path)
     if data_reader == nil then
         print('file open fiald')
         return 
@@ -178,8 +176,8 @@ local function parse_meta()
 end
 
 
-local function parse_meta_demo()
-    local data = read_file_data()
+local function parse_meta_demo(file_path)
+    local data = read_file_data(file_path)
     print("ALL data size: " .. (#data))
 
     local reader = Reader(data)  -- 闭包
@@ -247,7 +245,8 @@ local function parse_meta_demo()
 end
 
 
--- list_flv_all_tags()  -- demo 列出flv中所有的tag
--- parse_meta_demo()   -- demo 有大量字符串切片拼接操作, 执行效率不高
-parse_meta()  -- 解析 flv 
+local file_path = 'E:\\Project_test\\read_flv\\output_full.flv'
+-- list_flv_all_tags(file_path)  -- demo 列出flv中所有的tag
+-- parse_meta_demo(file_path)   -- demo 有大量字符串切片拼接操作, 执行效率不高
+parse_meta(file_path)  -- 解析 flv 
 
