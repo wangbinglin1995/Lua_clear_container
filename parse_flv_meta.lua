@@ -1,16 +1,6 @@
 bit  = require "bit"
 
 
-local function read_file_data(file_path)
-    local file = io.open(file_path, "rb")
-    if not file then        
-        return nil
-    end
-    local data = file:read("*a")
-    file:close()
-    return data
-end
-
 local function file_data_reader(file_path)    
     local file = io.open(file_path, "rb")
     if not file then        
@@ -28,19 +18,6 @@ local function file_data_reader(file_path)
     end
 end
 
-local function Reader(data)
-    local pos = 1
-    return function(n)
-        if pos >= #data then
-            return "", true
-        elseif n + pos >= #data then             
-            return string.sub(data, pos, #data), true
-        end
-        local res = string.sub(data, pos, pos+n-1)
-        pos = pos + n
-        return res, false
-    end
-end
 
 local function bin2number(str)
     local res = 0
@@ -53,21 +30,19 @@ end
 
 local function list_flv_all_tags(file_path)
     print('=========== list_flv_all_tags =================')
-    local data = read_file_data(file_path)
-    print("ALL data size: " .. (#data))
-
-    local reader = Reader(data)
+    local reader = file_data_reader(file_path)
     local header, eof = reader(13)
+    local tagHeader, tagData, tag_end_flag
+    
+    while not eof do  
+        tagHeader, eof = reader(11)
+        if not tagHeader then  break  end 
 
-    while true do
-        if eof then  break  end
-
-        local tagHeader, eof = reader(11)
         local tag_data_length = bin2number(string.sub(tagHeader, 2, 4))
         local timeStamp = bin2number(string.sub(tagHeader, 5, 7))
 
-        local tagData, eof = reader(tag_data_length)
-        local tag_end_flag, eof = reader(4)
+        tagData, eof = reader(tag_data_length)
+        tag_end_flag, eof = reader(4)
         local tagSize = bin2number(tag_end_flag)
 
         local tag_number = bin2number(string.sub(tagHeader, 1, 1))
@@ -89,14 +64,12 @@ end
 
 
 local function parse_meta(file_path)
-    -- local data = read_file_data()
     local data_reader = file_data_reader(file_path)
     if data_reader == nil then
         print('file open fiald')
         return 
     end
     local data, eof = data_reader()    
-    -- print("ALL data size: " .. (#data))
 
     local is_video = false;    local video_data = nil
     local is_audio = false;    local audio_data = nil
@@ -177,10 +150,7 @@ end
 
 
 local function parse_meta_demo(file_path)
-    local data = read_file_data(file_path)
-    print("ALL data size: " .. (#data))
-
-    local reader = Reader(data)  -- 闭包
+    local reader = file_data_reader(file_path)  -- 闭包
 
     local header, eof = reader(13)
     print(#header, string.sub(header,1,3), "'" .. header .. "'")
@@ -189,16 +159,17 @@ local function parse_meta_demo(file_path)
     local is_audio = false;    local audio_data = nil
     local is_meta  = false;    local meta_data  = nil
 
-    local tag_pos = {0, 0,  0, 0,  0, 0}
-    while true do
-        if eof then  break  end
+    local tagHeader, tagData, tag_end_flag
+    while not eof do
 
-        local tagHeader, eof = reader(11)             -- read tag_header
+        tagHeader, eof = reader(11)             -- read tag_header
+        if not tagHeader then break end
+
         local tag_data_length = bin2number(string.sub(tagHeader, 2, 4))
         local timeStamp = bin2number(string.sub(tagHeader, 5, 7))
 
-        local tagData, eof = reader(tag_data_length)  -- read tag_body
-        local tag_end_flag, eof = reader(4)           -- read tag_end_flag
+        tagData, eof = reader(tag_data_length)  -- read tag_body
+        tag_end_flag, eof = reader(4)           -- read tag_end_flag
         local tagSize = bin2number(tag_end_flag)
 
 
@@ -246,7 +217,9 @@ end
 
 
 local file_path = 'E:\\Project_test\\read_flv\\output_full.flv'
--- list_flv_all_tags(file_path)  -- demo 列出flv中所有的tag
--- parse_meta_demo(file_path)   -- demo 有大量字符串切片拼接操作, 执行效率不高
+list_flv_all_tags(file_path)  -- demo 列出flv中所有的tag
+print("===============================")
+parse_meta_demo(file_path)   -- demo 有大量字符串切片拼接操作, 执行效率不高
+print("===============================")
 parse_meta(file_path)  -- 解析 flv 
 

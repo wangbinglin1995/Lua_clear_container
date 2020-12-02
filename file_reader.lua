@@ -38,3 +38,30 @@ local function file_reader_stream(file_name)
         return data, eof
     end
 end
+
+local function file_writer(file_name)    
+    local file = io.open(file_name, "a")
+    if not file then        
+        return nil
+    end
+    return function(str, is_end)        
+        file:write(str)  
+        if is_end then
+            file:close()            
+        end
+        return 
+    end
+end
+
+
+local aa1 = file_writer('test.txt') 
+aa1("sdfs\n")
+aa1('sdfsd\n')
+local aa2 = file_writer('test.txt') 
+aa2("sdfs\n")
+aa2('sdfsd\n')
+
+aa1("", true)
+aa2("fs")
+
+ 
