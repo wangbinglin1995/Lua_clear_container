@@ -7,7 +7,7 @@ local function shuffle_array(a)
     end
 
     math.randomseed(tostring(os.time()):reverse():sub(1,6))
-    for i = n, 1, -1 do
+    for i = #a, 1, -1 do
         local j = math.random(i)
         a[i], a[j] = a[j], a[i]        
 
